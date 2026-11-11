@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Browser MCP",
+  "description": "Exposes this browser to a remote MCP client through a relay.",
+  "version": "0.2.0",
+  "minimum_chrome_version": "125",
+  "permissions": ["debugger", "tabs", "tabGroups", "downloads", "storage", "alarms", "offscreen"],
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Browser MCP",
+    "default_popup": "popup.html"
+  }
+}

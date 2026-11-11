@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        width: 280px;
+        margin: 12px;
+        font: 13px system-ui, sans-serif;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      input {
+        box-sizing: border-box;
+        width: 100%;
+        margin-top: 2px;
+        padding: 5px;
+      }
+
+      button {
+        width: 100%;
+        padding: 6px;
+      }
+
+      #status {
+        margin-top: 8px;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <label>
+      Relay URL
+      <input id="url" type="url" placeholder="http://127.0.0.1:8787" />
+    </label>
+    <label>
+      Token
+      <input id="token" type="password" />
+    </label>
+    <button id="toggle">Connect</button>
+    <div id="status"></div>
+    <script type="module" src="dist/popup.js"></script>
+  </body>
+</html>
