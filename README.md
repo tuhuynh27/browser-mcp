@@ -64,6 +64,35 @@ cloudflared tunnel --url http://127.0.0.1:8787
 ngrok http 8787
 ```
 
+### Private access with Tailscale
+
+A public tunnel is not needed when both machines are on your tailnet. This suits a Claude Code session on a cloud machine that drives the browser on your laptop, for example to test a web app.
+
+On the machine with the browser (relay running, extension connected):
+
+```sh
+tailscale serve --bg 8787
+tailscale serve status      # prints https://YOUR-MACHINE.YOUR-TAILNET.ts.net
+```
+
+This publishes the relay over HTTPS to your tailnet only. It needs MagicDNS and HTTPS certificates enabled in the Tailscale admin console.
+
+On the cloud machine:
+
+```sh
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up --authkey tskey-auth-XXXX     # an ephemeral key fits short-lived machines
+
+claude mcp add --transport http browser https://YOUR-MACHINE.YOUR-TAILNET.ts.net/mcp \
+  --header "Authorization: Bearer $RELAY_TOKEN"
+```
+
+In a container without a TUN device, run `tailscaled --tun=userspace-networking --outbound-http-proxy-listen=localhost:1055 &` and start Claude Code with `HTTPS_PROXY=http://localhost:1055`.
+
+Stop sharing with `tailscale serve reset`. The token is still required: Tailscale limits who can reach the relay, the token decides who may use it.
+
+Paths given to `file_upload` are read on the browser machine, not the cloud machine.
+
 ## Connect a client
 
 Claude Code:
