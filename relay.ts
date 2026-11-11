@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process';
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, stat } from 'node:fs/promises';
@@ -33,6 +34,11 @@ const FILES_DIR = path.join(import.meta.dirname, 'files');
 const CALL_TIMEOUT_MS = 90_000;
 const HELLO_TIMEOUT_MS = 5_000;
 const IDLE_TIMEOUT_MS = 60_000;
+
+// Optional shell command that starts the browser when a call arrives and no
+// extension is connected, e.g. BROWSER_LAUNCH='open -g -a "Google Chrome"'.
+const BROWSER_LAUNCH = process.env.BROWSER_LAUNCH ?? '';
+const LAUNCH_TIMEOUT_MS = 20_000;
 
 if (!TOKEN) {
   console.error('RELAY_TOKEN is required. Example: RELAY_TOKEN=$(openssl rand -hex 32) node relay.ts');
@@ -101,13 +107,46 @@ function sendToExtension(socket: WebSocket, message: ToExtension): void {
   socket.send(JSON.stringify(message));
 }
 
-function callExtension(tool: ToolName, args: Record<string, unknown>): Promise<unknown> {
+let waking: Promise<boolean> | null = null;
+let onConnected: Array<() => void> = [];
+
+// Starts the browser and waits for its extension to connect. Calls that
+// arrive meanwhile share the same attempt.
+function wakeBrowser(): Promise<boolean> {
+  waking ??= new Promise<boolean>((resolve) => {
+    log(`no browser connected, running: ${BROWSER_LAUNCH}`);
+
+    const child = spawn(BROWSER_LAUNCH, { shell: true, detached: true, stdio: 'ignore' });
+
+    child.on('error', (error) => log(`browser launch failed: ${error.message}`));
+    child.unref();
+
+    const timer = setTimeout(() => resolve(false), LAUNCH_TIMEOUT_MS);
+
+    onConnected.push(() => {
+      clearTimeout(timer);
+      resolve(true);
+    });
+  }).finally(() => {
+    waking = null;
+    onConnected = [];
+  });
+
+  return waking;
+}
+
+async function callExtension(tool: ToolName, args: Record<string, unknown>): Promise<unknown> {
+  if (!extension && BROWSER_LAUNCH) await wakeBrowser();
+
   const socket = extension;
 
   if (!socket) {
-    const message = 'No browser connected. Open the extension popup and press Connect.';
+    const message = BROWSER_LAUNCH
+      ? `Started the browser, but its extension did not connect within ${LAUNCH_TIMEOUT_MS / 1000}s. ` +
+        'Check that the extension is installed in that profile and was left connected.'
+      : 'No browser connected. Open the extension popup and press Connect.';
 
-    return Promise.reject(new ExtensionError({ code: 'NO_EXTENSION', message }));
+    throw new ExtensionError({ code: 'NO_EXTENSION', message });
   }
 
   return new Promise((resolve, reject) => {
@@ -186,6 +225,9 @@ function acceptExtension(socket: WebSocket): void {
 
       log(`extension connected: ${message.browser} v${message.version}`);
       sendToExtension(socket, { type: 'ready' });
+
+      for (const notify of onConnected) notify();
+
       return;
     }
 

@@ -13,6 +13,7 @@ MCP client --HTTP + Bearer--> relay.ts <--WebSocket-- extension --chrome.debugge
 
 - **Mostly compatible with Claude in Chrome.** Tool names, schemas and descriptions follow the Claude in Chrome extension, so Claude models use them the way they already know.
 - **Works in the background.** The browser never takes focus. Tabs are driven while covered by other windows or while another tab is in front.
+- **Starts the browser on demand.** With `BROWSER_LAUNCH` set, the relay opens the browser when a call arrives and none is connected.
 - **Batching.** `browser_batch` runs clicks, typing, JavaScript and screenshots in one round trip.
 - **Iframes included.** `read_page` and `find` see into iframes, cross-origin too.
 - **Extras.** Console and network inspection, video recording, downloads and PDF export.
@@ -55,6 +56,18 @@ node relay.ts        # 127.0.0.1:8787, PORT overrides
 ```
 
 Open the extension popup, enter `http://127.0.0.1:8787` and the token, press Connect.
+
+### Start the browser on demand
+
+Set `BROWSER_LAUNCH` to a shell command and the relay runs it when a call arrives while no browser is connected, then waits up to 20s for the extension:
+
+```sh
+BROWSER_LAUNCH='open -g -a "Google Chrome"' node relay.ts     # macOS, opens without taking focus
+BROWSER_LAUNCH='google-chrome' node relay.ts                   # Linux
+BROWSER_LAUNCH='start msedge' node relay.ts                    # Windows
+```
+
+The extension must be installed in the profile that opens and have been left connected; it reconnects by itself at browser start. The machine has to be awake with a desktop session: the relay cannot wake a sleeping computer.
 
 Expose the relay with a tunnel:
 
