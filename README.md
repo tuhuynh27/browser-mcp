@@ -2,8 +2,11 @@
 
 Use your own logged-in Chrome or Edge as a remote MCP server. Any MCP client can open tabs, click, type, read pages, take screenshots and record video in the browser you already use, with your sessions and cookies.
 
-```
-MCP client --HTTP + Bearer--> relay.ts <--WebSocket-- extension --chrome.debugger--> tabs
+```mermaid
+flowchart LR
+    client[MCP client] -->|HTTP + Bearer| relay[relay.ts]
+    extension[Extension] -->|WebSocket| relay
+    extension -->|chrome.debugger| tabs[Tabs]
 ```
 
 - **Extension** (Manifest V3): connects out to the relay and drives tabs through the Chrome DevTools Protocol, with real mouse and keyboard events.
