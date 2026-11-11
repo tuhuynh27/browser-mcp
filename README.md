@@ -1,3 +1,5 @@
+<img src="assets/logo.svg" width="96" alt="BrowserMCP logo">
+
 # BrowserMCP
 
 Use your own logged-in Chrome or Edge as a remote MCP server. Any MCP client can open tabs, click, type, read pages, take screenshots and record video in the browser you already use, with your sessions and cookies.
