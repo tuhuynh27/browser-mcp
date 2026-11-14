@@ -8,8 +8,10 @@
       :root {
         --ink: #12203f;
         --ink-raised: #1a2b50;
+        --ink-deep: #0c1731;
         --ink-line: #2a3d68;
         --paper: #f4f6fa;
+        --code: #cfe0ff;
         --muted: #8d9bb8;
         --blue: #5b8cff;
         --green: #3dd598;
@@ -26,13 +28,15 @@
       * { box-sizing: border-box; }
 
       body {
-        width: 320px;
+        width: 360px;
         margin: 0;
         padding: 18px;
         background: var(--ink);
         color: var(--paper);
-        font: 13px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
+        font: 13px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif;
       }
+
+      [hidden] { display: none !important; }
 
       header {
         display: flex;
@@ -57,7 +61,7 @@
         grid-template-columns: auto 1fr auto;
         align-items: center;
         gap: 10px;
-        margin: 22px 0 6px;
+        margin: 14px 0 4px;
       }
 
       .node {
@@ -117,56 +121,195 @@
       }
 
       #status {
-        margin: 16px 0 18px;
+        margin: 16px 0 0;
         min-height: 1.4em;
         color: var(--state);
-        font-weight: 550;
+        font-weight: 600;
       }
 
-      label {
-        display: block;
-        margin-bottom: 12px;
+      .hint {
+        margin: 4px 0 0;
         color: var(--muted);
         font-size: 12px;
       }
 
+      .hint:empty { display: none; }
+
+      .steps {
+        margin: 14px 0 6px;
+        padding: 0;
+        list-style: none;
+        counter-reset: step;
+      }
+
+      .step {
+        position: relative;
+        padding: 0 0 14px 34px;
+        counter-increment: step;
+      }
+
+      .step::before {
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 22px;
+        height: 22px;
+        border: 1px solid var(--ink-line);
+        border-radius: 50%;
+        background: var(--ink-raised);
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 20px;
+        text-align: center;
+      }
+
+      .step::after {
+        content: '';
+        position: absolute;
+        left: 11px;
+        top: 28px;
+        bottom: 6px;
+        width: 1px;
+        background: var(--ink-line);
+      }
+
+      .step:last-child::after { display: none; }
+
+      h2 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 22px;
+      }
+
+      .step .hint { margin: 6px 0 0; }
+
       input {
         display: block;
         width: 100%;
-        margin-top: 5px;
         padding: 8px 10px;
         border: 1px solid var(--ink-line);
         border-radius: 8px;
         background: var(--ink-raised);
         color: var(--paper);
-        font: 13px ui-monospace, 'SF Mono', Menlo, monospace;
+        font: 12px ui-monospace, 'SF Mono', Menlo, monospace;
       }
 
       input::placeholder { color: #5d6f96; }
 
+      .row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px;
+      }
+
+      .code {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: start;
+        padding: 10px;
+        border: 1px solid var(--ink-line);
+        border-radius: 8px;
+        background: var(--ink-deep);
+      }
+
+      pre {
+        margin: 0;
+        color: var(--code);
+        font: 11.5px/1.5 ui-monospace, 'SF Mono', Menlo, monospace;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      #client { margin-top: 16px; }
+
+      .tabs {
+        display: flex;
+        gap: 4px;
+        margin: 0 0 8px;
+      }
+
+      .tab {
+        padding: 5px 10px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 12px;
+        transition: background 0.15s, color 0.15s;
+      }
+
+      .tab:hover { color: var(--paper); }
+
+      .tab[aria-selected='true'] {
+        background: var(--ink-raised);
+        color: var(--paper);
+        box-shadow: inset 0 0 0 1px var(--ink-line);
+      }
+
+      .advanced { margin: 0 0 10px; }
+
+      .advanced summary {
+        color: var(--muted);
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .advanced input { margin-top: 6px; }
+
+      .advanced summary:focus-visible {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
+
       input:focus-visible,
-      button:focus-visible {
+      button:focus-visible,
+      .tab:focus-visible {
         outline: 2px solid var(--blue);
         outline-offset: 2px;
       }
 
       button {
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .ghost {
+        padding: 5px 10px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        box-shadow: inset 0 0 0 1px var(--ink-line);
+        color: var(--paper);
+        font-size: 12px;
+        transition: background 0.15s;
+      }
+
+      .ghost:hover { background: var(--ink-raised); }
+
+      .ghost.done {
+        box-shadow: inset 0 0 0 1px var(--green);
+        color: var(--green);
+      }
+
+      #toggle {
         width: 100%;
-        margin-top: 6px;
+        margin-top: 4px;
         padding: 9px;
         border: 0;
         border-radius: 8px;
         background: var(--blue);
         color: var(--ink);
-        font: inherit;
         font-weight: 650;
-        cursor: pointer;
         transition: filter 0.15s;
       }
 
-      button:hover { filter: brightness(1.08); }
+      #toggle:hover { filter: brightness(1.08); }
 
-      button.off {
+      #toggle.off {
         background: transparent;
         box-shadow: inset 0 0 0 1px var(--ink-line);
         color: var(--paper);
@@ -196,17 +339,46 @@
     </div>
 
     <div id="status" role="status"></div>
+    <p id="hint" class="hint"></p>
 
-    <label>
-      Relay URL
-      <input id="url" type="url" placeholder="http://127.0.0.1:8787" spellcheck="false" />
-    </label>
-    <label>
-      Token
-      <input id="token" type="password" autocomplete="off" />
-    </label>
+    <ol id="setup" class="steps">
+      <li class="step">
+        <h2>Create a token</h2>
+        <div class="row">
+          <input id="token" type="text" autocomplete="off" spellcheck="false" aria-label="Token" />
+          <button id="generate" class="ghost" type="button">New</button>
+        </div>
+      </li>
 
-    <button id="toggle">Connect</button>
+      <li class="step">
+        <h2>Start the relay</h2>
+        <div class="code">
+          <pre id="relay-cmd"></pre>
+          <button class="ghost" type="button" data-copy="relay-cmd">Copy</button>
+        </div>
+        <p class="hint">Run in the browser-mcp folder.</p>
+      </li>
+    </ol>
+
+    <section id="client" hidden>
+      <h2>Add it to your MCP client</h2>
+      <div class="tabs" role="tablist" aria-label="MCP client">
+        <button id="tab-claude" class="tab" type="button" role="tab" data-tab="claude" aria-selected="true">Claude Code</button>
+        <button id="tab-cursor" class="tab" type="button" role="tab" data-tab="cursor" aria-selected="false">Cursor CLI</button>
+      </div>
+      <div class="code">
+        <pre id="client-cmd"></pre>
+        <button class="ghost" type="button" data-copy="client-cmd">Copy</button>
+      </div>
+      <p id="client-hint" class="hint"></p>
+    </section>
+
+    <details class="advanced">
+      <summary>Relay URL</summary>
+      <input id="url" type="url" spellcheck="false" aria-label="Relay URL" placeholder="http://127.0.0.1:8787" />
+    </details>
+
+    <button id="toggle" type="button">Connect</button>
     <script type="module" src="dist/popup.js"></script>
   </body>
 </html>
