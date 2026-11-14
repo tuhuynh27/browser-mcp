@@ -18,8 +18,10 @@ let enabled = false;
 function render(status: Status): void {
   const detail = status.detail ? ` - ${status.detail}` : '';
 
+  document.body.dataset.state = status.state;
   statusLine.textContent = LABELS[status.state] + detail;
   toggle.textContent = enabled ? 'Disconnect' : 'Connect';
+  toggle.classList.toggle('off', enabled);
 }
 
 async function init(): Promise<void> {
