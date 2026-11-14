@@ -1,5 +1,6 @@
 import { type Target, parentOf, send } from './cdp.js';
 import { ToolError } from './errors.js';
+import { cursor } from './overlay.js';
 import { type ElementHandle, callOn } from './snapshot.js';
 
 export interface Point {
@@ -145,6 +146,8 @@ async function mouse(
     clickCount,
     modifiers,
   });
+
+  cursor(tabId, point, type === 'mousePressed');
 }
 
 export async function moveTo(tabId: number, point: Point): Promise<void> {
@@ -186,6 +189,7 @@ export async function drag(tabId: number, from: Point, to: Point): Promise<void>
 
 export async function wheel(tabId: number, point: Point, deltaX: number, deltaY: number): Promise<void> {
   await send({ tabId }, 'Input.dispatchMouseEvent', { type: 'mouseWheel', x: point.x, y: point.y, deltaX, deltaY });
+  cursor(tabId, point);
   await sleep(150);
 }
 

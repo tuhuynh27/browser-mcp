@@ -4,6 +4,7 @@ import { ToolError, toErrorBody } from './errors.js';
 import { files } from './files.js';
 import { setValue, settle, uploadFiles } from './input.js';
 import { inspect, runJs } from './inspect.js';
+import { activate, clearAll } from './overlay.js';
 import type {
   BatchArgs,
   ComputerArgs,
@@ -163,6 +164,8 @@ function runOne(tool: string, args: Record<string, unknown>, inBatch: boolean): 
     throw new ToolError('UNKNOWN_TOOL', `Unknown tool "${tool}".`);
   }
 
+  if (typeof args.tabId === 'number') activate(args.tabId);
+
   return handler(args, inBatch);
 }
 
@@ -230,5 +233,6 @@ export async function runTool(tool: ToolName, args: Record<string, unknown>): Pr
 
 // Called when the relay connection is dropped on purpose.
 export async function releaseAll(): Promise<void> {
+  await clearAll();
   await detachAll();
 }

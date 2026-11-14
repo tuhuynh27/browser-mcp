@@ -1,5 +1,6 @@
 import { resolveFrame, send } from './cdp.js';
 import { ToolError } from './errors.js';
+import { hidden } from './overlay.js';
 import { evaluate } from './snapshot.js';
 
 // The viewport as the model sees it. Wide viewports are shrunk so a full
@@ -47,18 +48,20 @@ export async function viewOf(tabId: number): Promise<View> {
 }
 
 export async function captureViewport(tabId: number, view: View, scale = 1): Promise<Shot> {
-  const { data } = await send({ tabId }, 'Page.captureScreenshot', {
-    format: 'jpeg',
-    quality: 80,
-    clip: {
-      x: view.pageX,
-      y: view.pageY,
-      width: view.cssWidth,
-      height: view.cssHeight,
-      // clip.scale 1 would give device pixels.
-      scale: (view.ratio * scale) / view.dpr,
-    },
-  });
+  const { data } = await hidden(tabId, () =>
+    send({ tabId }, 'Page.captureScreenshot', {
+      format: 'jpeg',
+      quality: 80,
+      clip: {
+        x: view.pageX,
+        y: view.pageY,
+        width: view.cssWidth,
+        height: view.cssHeight,
+        // clip.scale 1 would give device pixels.
+        scale: (view.ratio * scale) / view.dpr,
+      },
+    }),
+  );
 
   return {
     data,
@@ -86,10 +89,12 @@ export async function captureRegion(
 
   const factor = Math.min(scale, MAX_EDGE / (Math.max(width, height) * view.dpr));
 
-  const { data } = await send({ tabId }, 'Page.captureScreenshot', {
-    format: 'png',
-    clip: { x: x0 + view.pageX, y: y0 + view.pageY, width, height, scale: factor },
-  });
+  const { data } = await hidden(tabId, () =>
+    send({ tabId }, 'Page.captureScreenshot', {
+      format: 'png',
+      clip: { x: x0 + view.pageX, y: y0 + view.pageY, width, height, scale: factor },
+    }),
+  );
 
   return {
     data,
